@@ -67,11 +67,11 @@ rm -f /data/.hermes/gateway.pid /data/.hermes/gateway.lock /data/.hermes/gateway
 # the volume always has the current identity regardless of deploy history.
 cp /app/docker/SOUL.md /data/.hermes/SOUL.md
 
-# Install the Domain property tool into Hermes' tools directory so the
-# search_properties, get_suburb_stats and get_property_details tools are
-# available to the agent. Symlink to the image copy so upgrades auto-apply.
+# Install all Sydney property tools into Hermes' tools directory.
 mkdir -p /data/.hermes/tools
-cp /app/tools/domain_property_tool.py /data/.hermes/tools/domain_property_tool.py
+for tool in /app/tools/*_tool.py; do
+  cp "$tool" /data/.hermes/tools/"$(basename "$tool")"
+done
 
 # ── End Sydney Property Harness bootstrap ─────────────────────────────────────
 
