@@ -73,6 +73,25 @@ for tool in /app/tools/*_tool.py; do
   cp "$tool" /data/.hermes/tools/"$(basename "$tool")"
 done
 
+# Install the property tools as a PLUGIN.
+#
+# The .py files above are Hermes *registry* modules: each ends with a guarded
+# `from tools.registry import registry; registry.register(...)` block. Hermes
+# only auto-discovers tools that live inside its own source tree, so a module
+# dropped in $HERMES_HOME/tools/ registers nothing and no session ever sees it —
+# the files were inert and the agent had ZERO property data tools in production.
+# The plugin imports them, captures the schema/handler each one declares, and
+# re-registers all 16 tools through the supported ctx.register_tool API.
+mkdir -p /data/.hermes/plugins
+for plugin_dir in /app/plugins/*/; do
+  [ -d "$plugin_dir" ] || continue
+  plugin_name="$(basename "$plugin_dir")"
+  rm -rf "/data/.hermes/plugins/$plugin_name"
+  cp -r "$plugin_dir" "/data/.hermes/plugins/$plugin_name"
+done
+# Idempotent: enable is a no-op once the plugin is already enabled.
+hermes plugins enable triggerboff-property >/dev/null 2>&1 || true
+
 # ── End Sydney Property Harness bootstrap ─────────────────────────────────────
 
 # Durable lazy-install target for opt-in backends (supermemory, mem0, firecrawl, etc.).
