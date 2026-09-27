@@ -69,7 +69,7 @@ cp /app/docker/SOUL.md /data/.hermes/SOUL.md
 
 # Install all Sydney property tools into Hermes' tools directory.
 mkdir -p /data/.hermes/tools
-for tool in /app/tools/*_tool.py; do
+for tool in /app/tools/*.py; do
   cp "$tool" /data/.hermes/tools/"$(basename "$tool")"
 done
 
