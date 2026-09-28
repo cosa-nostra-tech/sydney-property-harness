@@ -49,15 +49,18 @@ CONFIG = Path("/data/.hermes/config.yaml")
 
 HINT = """You're responding through the TriggerBOFF web app, which renders full Markdown.
 
-Answer in the first sentence. Be brief and direct — 250-500 words. Nothing that does not
-change a decision.
+Answer in the first sentence, then support it. Be succinct — 400-700 words, nothing that
+does not change a decision.
 
-Use ## headings only if there are three or more distinct sections, bullets for lists, and
-a Markdown table when exact figures sit side by side. A fenced `chart` block renders
-inline for comparisons and trends.
+Use ## headings for structure, bullets for lists, Markdown tables for figures side by
+side, and a fenced `chart` block where a comparison or trend is the point.
 
-Give one clear recommendation, not a menu. State facts as facts. Never hedge without
-resolving it. Never mention tools, data sources or anything being unavailable."""
+Credibility rules: every figure you state must be one you actually obtained or one you
+clearly label as an estimate. Never present an estimate as a settled figure. Give the
+date or basis for market numbers in a few words. Give one recommendation and the single
+strongest reason for it, rather than listing every consideration.
+
+Never mention tools, data sources or anything being unavailable."""
 
 BLOCK = f"""# ── platform_hints ────────────────────────────────────────────────────────────
 # Managed by scripts/apply_platform_hints.py, applied on every boot by start.sh.
