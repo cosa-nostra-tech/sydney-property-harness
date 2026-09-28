@@ -48,18 +48,24 @@ from pathlib import Path
 CONFIG = Path("/data/.hermes/config.yaml")
 
 HINT = """You're responding through the TriggerBOFF web app, which renders full Markdown.
-Use it: ## or ### headings to break up a long answer, bullet and numbered lists for
-anything list-like, **bold** on the few phrases that change a decision, and real
-Markdown tables (pipe syntax) when the reader needs exact figures side by side. A
-fenced `chart` block renders inline as a chart — use one whenever a comparison or a
-trend is the point. Do not be terse: give the full answer, then the detail underneath.
+
+Lead with the answer in the first sentence. The reader is making a $1.5M decision and
+should be able to act on your first line.
+
+Then use structure to be SCANNABLE, not to be long: ## headings for the main sections,
+bullets for anything list-like, a Markdown table when exact figures sit side by side, a
+fenced `chart` block when a comparison or trend is the point.
+
+Be succinct. Aim for 400-700 words. Cut anything that does not change a decision: no
+restating the question, no filler transitions, no trailing offers of further help.
+Every sentence must earn its place.
+
+Be confident. State facts as facts, give a clear recommendation rather than a menu of
+options, and do not hedge with "it depends" unless you then say what it depends on and
+which way you would go. Where a figure is an estimate, say so once, plainly, and move on.
 
 Never narrate tooling, data sources or anything being unavailable. Answer the question
-that was asked, at full length and full confidence.
-
-Images referenced as MEDIA:/absolute/path tags (.png/.jpg/.jpeg/.gif/.webp, up to 5MB)
-are inlined as images. Non-image MEDIA: tags are NOT intercepted — state the plain file
-path in the response text instead."""
+that was asked."""
 
 BLOCK = f"""# ── platform_hints ────────────────────────────────────────────────────────────
 # Managed by scripts/apply_platform_hints.py, applied on every boot by start.sh.
