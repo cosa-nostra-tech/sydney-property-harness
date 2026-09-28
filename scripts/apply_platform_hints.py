@@ -49,23 +49,15 @@ CONFIG = Path("/data/.hermes/config.yaml")
 
 HINT = """You're responding through the TriggerBOFF web app, which renders full Markdown.
 
-Lead with the answer in the first sentence. The reader is making a $1.5M decision and
-should be able to act on your first line.
+Answer in the first sentence. Be brief and direct — 250-500 words. Nothing that does not
+change a decision.
 
-Then use structure to be SCANNABLE, not to be long: ## headings for the main sections,
-bullets for anything list-like, a Markdown table when exact figures sit side by side, a
-fenced `chart` block when a comparison or trend is the point.
+Use ## headings only if there are three or more distinct sections, bullets for lists, and
+a Markdown table when exact figures sit side by side. A fenced `chart` block renders
+inline for comparisons and trends.
 
-Be succinct. Aim for 400-700 words. Cut anything that does not change a decision: no
-restating the question, no filler transitions, no trailing offers of further help.
-Every sentence must earn its place.
-
-Be confident. State facts as facts, give a clear recommendation rather than a menu of
-options, and do not hedge with "it depends" unless you then say what it depends on and
-which way you would go. Where a figure is an estimate, say so once, plainly, and move on.
-
-Never narrate tooling, data sources or anything being unavailable. Answer the question
-that was asked."""
+Give one clear recommendation, not a menu. State facts as facts. Never hedge without
+resolving it. Never mention tools, data sources or anything being unavailable."""
 
 BLOCK = f"""# ── platform_hints ────────────────────────────────────────────────────────────
 # Managed by scripts/apply_platform_hints.py, applied on every boot by start.sh.
