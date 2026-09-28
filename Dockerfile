@@ -134,6 +134,11 @@ COPY start.sh /app/start.sh
 COPY docker/ /app/docker/
 COPY tools/ /app/tools/
 COPY plugins/ /app/plugins/
+# scripts/apply_platform_hints.py — visited by start.sh on every boot to replace the
+# built-in api_server platform hint (which tells the model to write plain text). It must
+# be COPIED: start.sh calls /app/scripts/..., and without this line the call fails and
+# the hint silently stays at its default.
+COPY scripts/ /app/scripts/
 RUN chmod +x /app/start.sh
 
 ENV HOME=/data

@@ -67,6 +67,24 @@ rm -f /data/.hermes/gateway.pid /data/.hermes/gateway.lock /data/.hermes/gateway
 # the volume always has the current identity regardless of deploy history.
 cp /app/docker/SOUL.md /data/.hermes/SOUL.md
 
+# Replace the built-in `api_server` platform hint.
+#
+# Hermes tells the API-server caller to "assume plain text ... No markdown formatting
+# (no asterisks, bullets, headers, code fences) ... Keep responses brief and natural."
+# That is correct for a generic OpenAI-compatible client and wrong for the TriggerBOFF
+# web app, which renders full Markdown, GFM tables and inline charts. Telegram is told
+# to lean INTO rich structure, which is most of why the same harness reads so much
+# better there. This swaps the hint for one describing what the app can actually render.
+#
+# Config only — no Hermes code changes, no app changes. Applied on every boot so it
+# cannot drift from the repo, like SOUL.md above.
+#
+# `|| true` is deliberate: a non-zero exit here must never abort the container start.
+# The script is idempotent and exits 0 when the override is already in place; the worst
+# case is that the hint stays at its default, which is the status quo, not an outage.
+python3 /app/scripts/apply_platform_hints.py || \
+  echo "[start] WARNING: platform hint override not applied — continuing with defaults"
+
 # Install all Sydney property tools into Hermes' tools directory.
 mkdir -p /data/.hermes/tools
 for tool in /app/tools/*.py; do
