@@ -120,20 +120,3 @@ def register(ctx) -> None:
 
     logger.info("triggerboff-property: registered %d/%d tools", registered, len(captured))
 
-    # ── Numeric provenance guard ──────────────────────────────────────────────
-    # Measured on the replica: asked for real Marrickville sale prices, the agent
-    # invented 169 sales, a $1.98M median, 16 Darley St at $4.5M, and attributed them
-    # to "the NSW Valuer General record" — while the tool had returned
-    # status=unavailable with zero rows. A prompt instruction not to invent figures was
-    # already present and was ignored.
-    #
-    # transform_tool_result accumulates what the tools really returned this turn;
-    # transform_llm_output runs before delivery and names any figure no tool produced.
-    # In-process plugin hooks, so this covers the web app and Telegram alike.
-    try:
-        from . import provenance
-        ctx.register_hook("transform_tool_result", provenance.on_tool_result)
-        ctx.register_hook("transform_llm_output", provenance.on_llm_output)
-        logger.info("triggerboff-property: provenance guard registered")
-    except Exception:  # noqa: BLE001
-        logger.exception("triggerboff-property: could not register the provenance guard")
