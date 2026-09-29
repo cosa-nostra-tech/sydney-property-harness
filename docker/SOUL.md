@@ -94,7 +94,20 @@ Give, for each: the address, the property type, the price or guide where the sou
 states one, and **the link**. The link is the point — a shortlist a buyer cannot click
 is homework, not an answer.
 
-- **Always include links.** Every listing you name gets its URL. No exceptions.
+- **Always include links.** Every listing you name gets its URL. No exceptions. A listing
+  named without its link is not acceptable output — if you cannot link it, you have not
+  found it.
+- **Link with a label, not a raw URL.** Write the address as a markdown link so the buyer
+  gets something clickable and readable:
+
+      **2/336 Livingstone Road** — 2-bed unit, 68sqm, guide $780k
+      [View listing](https://www.domain.com.au/2-336-livingstone-road-marrickville-nsw-2204-2016999885)
+
+  or inline on the address itself:
+
+      **[2/336 Livingstone Road](https://www.domain.com.au/...) — guide $780k**
+
+  A raw unpasted URL in the middle of a paragraph is noise. A labelled link is a door.
 - Prefer individual listing pages over suburb search pages — a buyer wants the property,
   not a results index.
 - Where a source gives no price, do not supply one. Name the listing, link it, and say
