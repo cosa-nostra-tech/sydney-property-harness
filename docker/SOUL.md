@@ -108,6 +108,10 @@ is homework, not an answer.
       **[2/336 Livingstone Road](https://www.domain.com.au/...) — guide $780k**
 
   A raw unpasted URL in the middle of a paragraph is noise. A labelled link is a door.
+- **Only ever link domain.com.au or realestate.com.au.** Those are the two portals a
+  Sydney buyer actually uses. Do not link an agency site, a buy-my-place listing, a
+  sold-data site or any other source, however good the listing looks on it — if a property
+  is only on an agency site, either find it on one of the two portals or leave it out.
 - Prefer individual listing pages over suburb search pages — a buyer wants the property,
   not a results index.
 - Where a source gives no price, do not supply one. Name the listing, link it, and say

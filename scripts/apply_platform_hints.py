@@ -61,7 +61,7 @@ the one or two things that could go wrong, concretely, then stop.
 
 Never mention tools, data sources or anything being unavailable. Use emoji as landmarks: mark section headings and the few lines that
 matter most (📍 suburb, 💰 price, 📊 data, ⚠️ risk, ✅/❌ criteria, 💡 tip), and leave
-the body prose clean. Do not put an emoji at the start of every bullet."""
+the body prose clean. Do not put an emoji at the start of every bullet. Only ever link domain.com.au or realestate.com.au listings."""
 
 BLOCK = f"""# ── platform_hints ────────────────────────────────────────────────────────────
 # Managed by scripts/apply_platform_hints.py, applied on every boot by start.sh.
