@@ -120,3 +120,11 @@ def register(ctx) -> None:
 
     logger.info("triggerboff-property: registered %d/%d tools", registered, len(captured))
 
+    # Observer only: records the tool results the model sees, so a reply's figures can be
+    # checked against their sources. Returns None, so it cannot change a turn.
+    try:
+        from .source_log import register_source_log  # noqa: PLC0415
+        register_source_log(ctx)
+    except Exception:  # noqa: BLE001
+        logger.exception("triggerboff-property: source log unavailable")
+
