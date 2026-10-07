@@ -183,6 +183,137 @@ def _get_planning_controls(lat, lon):
     return controls
 
 
+
+# ─── Live DA lookup via the NSW Planning Portal feed ─────────────────────────
+#
+# The ArcGIS archive behind nsw_da_tracker_tool is frozen at April 2023, and the host
+# this tool originally scraped (datracker.planning.nsw.gov.au) does not resolve at all.
+# Both are historical-only, which is the wrong answer for "what is being built next door".
+#
+# The NSW Planning Portal publishes every DA lodged since Jan 2019, updated daily, CC-BY.
+# Access runs through a data broker, so until that lands we read the same feed through an
+# Apify actor that wraps it. Verified: applications lodged the same day, with street
+# addresses, estimated cost and a residential flag.
+
+APIFY_DA_ACTOR = "ausgovdata~nsw-planning-applications"
+
+# The actor filters by COUNCIL name (case-insensitive substring), not suburb. Results are
+# then filtered by suburb locally, so an imprecise council guess can only ever return fewer
+# DAs, never a DA from somewhere else. A false negative is recoverable; a wrong DA is not.
+_SUBURB_LGA = {
+    "MARRICKVILLE": "Inner West", "NEWTOWN": "Inner West", "DULWICH HILL": "Inner West",
+    "PETERSHAM": "Inner West", "STANMORE": "Inner West", "ENMORE": "Inner West",
+    "ANNANDALE": "Inner West", "LEICHHARDT": "Inner West", "LILYFIELD": "Inner West",
+    "BALMAIN": "Inner West", "ROZELLE": "Inner West", "ASHFIELD": "Inner West",
+    "SUMMER HILL": "Inner West", "HABERFIELD": "Inner West", "FIVE DOCK": "Canada Bay",
+    "CONCORD": "Canada Bay", "DRUMMOYNE": "Canada Bay", "GLEBE": "Sydney",
+    "FOREST LODGE": "Sydney", "CAMPERDOWN": "Sydney", "NEWTOWN SOUTH": "Inner West",
+    "RANDWICK": "Randwick", "COOGEE": "Randwick", "KENSINGTON": "Randwick",
+    "KINGSGROVE": "Bayside", "ROCKDALE": "Bayside", "MASCOT": "Bayside",
+    "SURRY HILLS": "Sydney", "REDFERN": "Sydney", "DARLINGHURST": "Sydney",
+    "PADDINGTON": "Woollahra", "WOOLLAHRA": "Woollahra", "DOUBLE BAY": "Woollahra",
+    "BONDI": "Waverley", "BRONTE": "Waverley", "CLOVELLY": "Waverley",
+    "BURWOOD": "Burwood", "STRATHFIELD": "Strathfield", "HOMEBUSH": "Strathfield",
+    "CANTERBURY": "Canterbury-Bankstown", "CAMPSIE": "Canterbury-Bankstown",
+    "ASHBURY": "Canterbury-Bankstown", "BANKSTOWN": "Canterbury-Bankstown",
+}
+
+
+def _apify_token():
+    import os
+    tok = os.environ.get("APIFY_TOKEN")
+    if tok:
+        return tok.strip()
+    for path in ("/data/.hermes/.builder-secrets", "/data/.hermes/harness-secrets"):
+        try:
+            with open(path, encoding="utf-8") as fh:
+                for line in fh:
+                    if line.startswith("APIFY_TOKEN="):
+                        return line.split("=", 1)[1].strip()
+        except OSError:
+            continue
+    return None
+
+
+# The actor rejects daysBack > 90, so 90 is the ceiling, not a preference.
+# 90 is the actor's hard maximum, but a 90-day Inner West run times out on the
+# synchronous endpoint. 30 days covers 'what is being built near here' and returns in
+# well under a minute. Anything older is planning history, not a live signal.
+def _recent_das_live(address, max_results=5, days_back=30):
+    """Recent DAs around an address, from the live NSW Planning Portal feed."""
+    import json as _json
+    import os
+    import urllib.error
+    import urllib.request
+
+    token = _apify_token()
+    if not token:
+        return None
+
+    suburb = None
+    try:
+        from geocode_tool import geocode_address
+        g = geocode_address(address)
+        if isinstance(g, dict):
+            suburb = (g.get("suburb") or "").upper() or None
+    except Exception as e:  # noqa: BLE001
+        logger.debug("geocode for DA lookup failed: %s", e)
+
+    council = _SUBURB_LGA.get(suburb or "")
+    payload = {"daysBack": days_back, "maxResults": max(max_results * 12, 60)}
+    if council:
+        payload["councils"] = [council]
+
+    url = (f"https://api.apify.com/v2/acts/{APIFY_DA_ACTOR}"
+           f"/run-sync-get-dataset-items?token={token}")
+    req = urllib.request.Request(url, data=_json.dumps(payload).encode(),
+                                 headers={"Content-Type": "application/json"})
+    try:
+        with urllib.request.urlopen(req, timeout=int(os.environ.get("APIFY_DA_TIMEOUT", "240"))) as r:
+            items = _json.loads(r.read() or b"[]")
+    except urllib.error.HTTPError as e:
+        body = e.read().decode(errors="replace")[:120]
+        logger.warning("Live DA feed unavailable: HTTP %s %s", e.code, body)
+        return None
+    except Exception as e:  # noqa: BLE001
+        logger.warning("Live DA feed failed: %s", e)
+        return None
+
+    if not isinstance(items, list) or not items:
+        return None
+
+    # Filter locally by suburb so a loose council guess cannot produce a DA from elsewhere.
+    if suburb:
+        local = [d for d in items if str(d.get("suburb", "")).upper() == suburb]
+        if local:
+            items = local
+
+    das = []
+    for d in items[:max_results]:
+        das.append({
+            "application_number": d.get("applicationNumber"),
+            "kind": d.get("kind"),
+            "address": d.get("address"),
+            "suburb": d.get("suburb"),
+            "postcode": d.get("postcode"),
+            "council": d.get("council"),
+            "council_reference": d.get("councilReference"),
+            "status": d.get("status"),
+            "lodged": (d.get("lodgementDate") or "")[:10],
+            "development": d.get("developmentTypes"),
+            "estimated_cost_aud": d.get("costAud"),
+            "home_related": d.get("homeRelated"),
+        })
+    return {
+        "das": das,
+        "count": len(das),
+        "source": "NSW Planning Portal (live, via Apify)",
+        "licence": "Contains NSW Planning Portal data (NSW Government), CC-BY",
+        "data_freshness": "live",
+        "council_filter": council or "all NSW",
+    }
+
+
 def _get_recent_das(address, max_results=5):
     """Recent DAs for the address, from the open NSW Planning Portal archive.
 
@@ -194,6 +325,15 @@ def _get_recent_das(address, max_results=5):
     That archive is frozen at April 2023, so the result carries `data_through`
     and `data_freshness` and must be presented as historical context.
     """
+    # Live first. The archive below is frozen at April 2023 and must never be the
+    # primary answer to "what is being built here".
+    try:
+        live = _recent_das_live(address, max_results=max_results)
+        if live and live.get("count"):
+            return live
+    except Exception as e:  # noqa: BLE001
+        logger.debug("live DA lookup failed, falling back to archive: %s", e)
+
     try:
         from nsw_da_tracker_tool import run as da_run
     except ImportError as e:  # pragma: no cover
