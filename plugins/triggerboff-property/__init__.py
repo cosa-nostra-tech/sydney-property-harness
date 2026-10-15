@@ -25,6 +25,7 @@ logger = logging.getLogger(__name__)
 
 # The tool modules shipped by start.sh into $HERMES_HOME/tools/
 MODULES = (
+    "record_screening_tool",
     "domain_property_tool",
     "nsw_property_sales_tool",
     "abs_suburb_tool",
